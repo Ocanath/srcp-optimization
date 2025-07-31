@@ -144,6 +144,21 @@ m_c3_1 = m_c3_1.dot(Hz(-ca*np.pi/180*r1_teeth/p1_teeth))
 
 DeleteAllGears()
 
+#Sun gear (central gear)
+sun = freecad.gears.commands.CreateInvoluteGear.create()
+sun.numpoints = num_points
+sun.num_teeth = sun_teeth
+sun.module = pitch_mm
+sun.pressure_angle = pressure_angle
+sun.height = r1_height  # Same height as ring 1
+sun.properties_from_tool = True
+sun.axle_hole = True
+sun.axle_holesize = sun_teeth * pitch_mm * 0.3  # 30% of pitch diameter for axle hole
+sun.shift = profile_shift
+if(noclearance == True):
+    sun.clearance = 0
+    sun.head = 0
+
 #Ring 1
 r1 = freecad.gears.commands.CreateInternalInvoluteGear.create()
 r1.numpoints = num_points
@@ -334,10 +349,21 @@ print("Exporting as", export_path)
 Part.export(objs, export_path) #r"C:\Users\Ocanath Robotman\Desktop\PLANETSTEP\p3Stack.step"
 
 
+doc = FreeCAD.activeDocument()
+objs = [
+    doc.getObject(sun.Name)
+]
+step_name = "sun.step"
+export_path = os.path.join(script_dir, step_name)
+print("Exporting as", export_path)
+Part.export(objs, export_path)
+
+
 
 
 doc = FreeCAD.activeDocument()
 objs = [
+    doc.getObject(sun.Name),
     doc.getObject(r1.Name),
     doc.getObject(r2.Name),
     doc.getObject(p1_1.Name),
