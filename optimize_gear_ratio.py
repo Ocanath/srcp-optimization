@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import yaml
 
 def find_nearest_gear_ratio(target_ratio, max_teeth=500):
     """
@@ -112,6 +113,35 @@ def find_minimum_ring1_gear_ratio(target_ratio, max_error_percent=5.0, max_teeth
     
     return None  # No solution found within tolerance
 
+def write_config_yaml(result, pitch_mm=0.5, pressure_angle=20, s1_shift=0.0508):
+    """
+    Write gearbox configuration to srcp.yaml file
+    """
+    config = {
+        'gear_ratios': {
+            'target_ratio': float(result.get('target_ratio', 0)),
+            'actual_ratio': float(result['actual_ratio']),
+            'error_percent': float(result['error_percent'])
+        },
+        'tooth_counts': {
+            'sun_teeth': int(result['sun_teeth']),
+            'p1_teeth': int(result['p1_teeth']),
+            'r1_teeth': int(result['r1_teeth']),
+            'p2_teeth': int(result['p2_teeth']),
+            'r2_teeth': int(result['r2_teeth'])
+        },
+        'gear_parameters': {
+            'module': float(pitch_mm),
+            'pressure_angle': float(pressure_angle),
+            's1_shift': float(s1_shift)
+        }
+    }
+    
+    with open('srcp.yaml', 'w') as f:
+        yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+    
+    print(f"Configuration written to srcp.yaml")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimize gear ratios for split ring compound planetary gearbox')
     parser.add_argument('target_ratio', type=float, help='Target gear ratio (required)')
@@ -119,6 +149,12 @@ if __name__ == "__main__":
                        help='Use minimum error algorithm instead of minimum tooth count (default: min-tooth)')
     parser.add_argument('--tolerance', type=float, default=5.0,
                        help='Error tolerance percentage for min-tooth algorithm (default: 5.0)')
+    parser.add_argument('--module', type=float, default=0.5,
+                       help='Gear module/pitch in mm (default: 0.5)')
+    parser.add_argument('--pressure-angle', type=float, default=20,
+                       help='Pressure angle in degrees (default: 20)')
+    parser.add_argument('--s1-shift', type=float, default=0.0508,
+                       help='Profile shift for stage 1 (default: 0.0508)')
     
     args = parser.parse_args()
     
@@ -135,6 +171,10 @@ if __name__ == "__main__":
             print(f"Ring 1 teeth: {result['r1_teeth']}")
             print(f"Planet 2 teeth: {result['p2_teeth']}")
             print(f"Ring 2 teeth: {result['r2_teeth']}")
+            
+            # Add target_ratio to result for YAML export
+            result['target_ratio'] = args.target_ratio
+            write_config_yaml(result, args.module, args.pressure_angle, args.s1_shift)
         else:
             print("No valid configuration found")
     else:
@@ -150,5 +190,9 @@ if __name__ == "__main__":
             print(f"Ring 1 teeth: {result['r1_teeth']}")
             print(f"Planet 2 teeth: {result['p2_teeth']}")
             print(f"Ring 2 teeth: {result['r2_teeth']}")
+            
+            # Add target_ratio to result for YAML export
+            result['target_ratio'] = args.target_ratio
+            write_config_yaml(result, args.module, args.pressure_angle, args.s1_shift)
         else:
             print(f"No solution found within {args.tolerance}% tolerance")

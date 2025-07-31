@@ -1,0 +1,14 @@
+gear_ratios:
+  target_ratio: 66.1
+  actual_ratio: 67.50000000000001
+  error_percent: 2.1180030257186386
+tooth_counts:
+  sun_teeth: 8
+  p1_teeth: 10
+  r1_teeth: 28
+  p2_teeth: 9
+  r2_teeth: 27
+gear_parameters:
+  module: 0.5
+  pressure_angle: 20.0
+  s1_shift: 0.0508
