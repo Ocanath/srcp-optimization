@@ -97,7 +97,7 @@ def get_carrier_angles(num_planets, r1_teeth, sun_teeth):
 							if triplet_val not in triplets:
 								triplets.append(triplet_val)
 		print(triplets[len(triplets)-1])
-		return triplets[len(triplets)-1];
+		return triplets[len(triplets)-1]
 
 
 print("\n\nComputing required angles for carrier:")
