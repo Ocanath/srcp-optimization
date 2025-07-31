@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 
 def find_nearest_gear_ratio(target_ratio, max_teeth=500):
     """
@@ -111,28 +112,43 @@ def find_minimum_ring1_gear_ratio(target_ratio, max_error_percent=5.0, max_teeth
     
     return None  # No solution found within tolerance
 
-# Example usage
 if __name__ == "__main__":
-    target = 66.1  # desired gear ratio
+    parser = argparse.ArgumentParser(description='Optimize gear ratios for split ring compound planetary gearbox')
+    parser.add_argument('target_ratio', type=float, help='Target gear ratio (required)')
+    parser.add_argument('--min-error', action='store_true', 
+                       help='Use minimum error algorithm instead of minimum tooth count (default: min-tooth)')
+    parser.add_argument('--tolerance', type=float, default=5.0,
+                       help='Error tolerance percentage for min-tooth algorithm (default: 5.0)')
     
-    # Find nearest ratio
-    result = find_nearest_gear_ratio(target)
-    print("=== NEAREST RATIO ===")
-    if result:
-        print(f"Target ratio: {target}")
-        print(f"Actual ratio: {result['actual_ratio']:.6f}")
-        print(f"Error: {result['error_percent']:.3f}%")
-        print(f"Ring 1 teeth: {result['r1_teeth']}")
-        print(result)
+    args = parser.parse_args()
     
-    # Find minimum ring1 size within 5% error
-    result2 = find_minimum_ring1_gear_ratio(target, max_error_percent=5.0)
-    print("=== MINIMUM RING1 (5% error) ===")
-    if result2:
-        print(f"Target ratio: {target}")
-        print(f"Actual ratio: {result2['actual_ratio']:.6f}")
-        print(f"Error: {result2['error_percent']:.3f}%")
-        print(f"Ring 1 teeth: {result2['r1_teeth']}")
-        print(result2)
+    if args.min_error:
+        # Use minimum error algorithm
+        result = find_nearest_gear_ratio(args.target_ratio)
+        print("=== MINIMUM ERROR ===")
+        if result:
+            print(f"Target ratio: {args.target_ratio}")
+            print(f"Actual ratio: {result['actual_ratio']:.6f}")
+            print(f"Error: {result['error_percent']:.4f}%")
+            print(f"Sun teeth: {result['sun_teeth']}")
+            print(f"Planet 1 teeth: {result['p1_teeth']}")
+            print(f"Ring 1 teeth: {result['r1_teeth']}")
+            print(f"Planet 2 teeth: {result['p2_teeth']}")
+            print(f"Ring 2 teeth: {result['r2_teeth']}")
+        else:
+            print("No valid configuration found")
     else:
-        print("No solution found within 5% tolerance")
+        # Use minimum tooth count algorithm (default)
+        result = find_minimum_ring1_gear_ratio(args.target_ratio, max_error_percent=args.tolerance)
+        print(f"=== MINIMUM TOOTH COUNT ({args.tolerance}% tolerance) ===")
+        if result:
+            print(f"Target ratio: {args.target_ratio}")
+            print(f"Actual ratio: {result['actual_ratio']:.6f}")
+            print(f"Error: {result['error_percent']:.4f}%")
+            print(f"Sun teeth: {result['sun_teeth']}")
+            print(f"Planet 1 teeth: {result['p1_teeth']}")
+            print(f"Ring 1 teeth: {result['r1_teeth']}")
+            print(f"Planet 2 teeth: {result['p2_teeth']}")
+            print(f"Ring 2 teeth: {result['r2_teeth']}")
+        else:
+            print(f"No solution found within {args.tolerance}% tolerance")
