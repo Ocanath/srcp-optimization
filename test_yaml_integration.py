@@ -25,7 +25,7 @@ def load_config():
             'p2_teeth': tooth_counts['p2_teeth'],
             'pitch_mm': gear_params['module'],
             'pressure_angle': gear_params['pressure_angle'],
-            's1_shift': gear_params['s1_shift']
+            'profile_shift': gear_params['profile_shift']
         }
     except FileNotFoundError:
         print("srcp.yaml not found, using default parameters")
@@ -37,7 +37,7 @@ def load_config():
             'p2_teeth': 20,
             'pitch_mm': 0.5,
             'pressure_angle': 20,
-            's1_shift': 0.0508
+            'profile_shift': 0.0508
         }
 
 if __name__ == "__main__":

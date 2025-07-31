@@ -113,7 +113,7 @@ def find_minimum_ring1_gear_ratio(target_ratio, max_error_percent=5.0, max_teeth
     
     return None  # No solution found within tolerance
 
-def write_config_yaml(result, pitch_mm=0.5, pressure_angle=20, s1_shift=0.0508):
+def write_config_yaml(result, pitch_mm=0.5, pressure_angle=20, profile_shift=0.0508):
     """
     Write gearbox configuration to srcp.yaml file
     """
@@ -133,7 +133,7 @@ def write_config_yaml(result, pitch_mm=0.5, pressure_angle=20, s1_shift=0.0508):
         'gear_parameters': {
             'module': float(pitch_mm),
             'pressure_angle': float(pressure_angle),
-            's1_shift': float(s1_shift)
+            'profile_shift': float(profile_shift)
         }
     }
     
@@ -153,7 +153,7 @@ if __name__ == "__main__":
                        help='Gear module/pitch in mm (default: 0.5)')
     parser.add_argument('--pressure-angle', type=float, default=20,
                        help='Pressure angle in degrees (default: 20)')
-    parser.add_argument('--s1-shift', type=float, default=0.0508,
+    parser.add_argument('--profile-shift', type=float, default=0.0508,
                        help='Profile shift for stage 1 (default: 0.0508)')
     
     args = parser.parse_args()
@@ -174,7 +174,7 @@ if __name__ == "__main__":
             
             # Add target_ratio to result for YAML export
             result['target_ratio'] = args.target_ratio
-            write_config_yaml(result, args.module, args.pressure_angle, args.s1_shift)
+            write_config_yaml(result, args.module, args.pressure_angle, args.profile_shift)
         else:
             print("No valid configuration found")
     else:
@@ -193,6 +193,6 @@ if __name__ == "__main__":
             
             # Add target_ratio to result for YAML export
             result['target_ratio'] = args.target_ratio
-            write_config_yaml(result, args.module, args.pressure_angle, args.s1_shift)
+            write_config_yaml(result, args.module, args.pressure_angle, args.profile_shift)
         else:
             print(f"No solution found within {args.tolerance}% tolerance")

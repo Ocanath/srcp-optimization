@@ -42,7 +42,7 @@ def load_config():
             'p2_teeth': tooth_counts['p2_teeth'],
             'pitch_mm': gear_params['module'],
             'pressure_angle': gear_params['pressure_angle'],
-            's1_shift': gear_params['s1_shift']
+            'profile_shift': gear_params['profile_shift']
         }
     except FileNotFoundError:
         print("srcp.yaml not found, using default parameters")
@@ -54,7 +54,7 @@ def load_config():
             'p2_teeth': 20,   # r2_teeth - sun_teeth - p1_teeth = 53 - 12 - 21 = 20
             'pitch_mm': 0.5,
             'pressure_angle': 20,
-            's1_shift': 0.0508
+            'profile_shift': 0.0508
         }
 
 # Load gear parameters
@@ -66,7 +66,7 @@ sun_teeth = gear_config['sun_teeth']
 p2_teeth = gear_config['p2_teeth']
 pitch_mm = gear_config['pitch_mm']
 pressure_angle = gear_config['pressure_angle']
-s1_shift = gear_config['s1_shift']
+profile_shift = gear_config['profile_shift']
 
 # Fixed parameters (not from YAML)
 planet_bore = 3.55  #mm
@@ -147,7 +147,7 @@ r1.pressure_angle = pressure_angle  #degrees
 r1.properties_from_tool = True    #"if helix_angle is given and properties_from_tool is enabled, gear parameters are internally recomputed for the rotated gear"
 r1.thickness = r1.module*5   #mm. material added past the *addendum*? six teeth's worth seems decent
 r1.height = r1_height   #mm
-r1.shift = s1_shift
+r1.shift = profile_shift
 if(noclearance == True):
 	r1.clearance = 0
 	r1.head = 0
@@ -164,7 +164,7 @@ def CreateP1Planet():
     p1.properties_from_tool = True
     p1.axle_hole = True
     p1.axle_holesize = planet_bore    #mm
-    p1.shift = -s1_shift
+    p1.shift = -profile_shift
     if(noclearance == True):
         p1.clearance = 0
         p1.head = 0
@@ -201,7 +201,7 @@ r2.numpoints = num_points
 r2.pressure_angle = pressure_angle  #degrees
 r2.properties_from_tool = True    #"if helix_angle is given and properties_from_tool is enabled, gear parameters are internally recomputed for the rotated gear"
 r2.height = r2_height   #mm
-r2.shift = s1_shift
+r2.shift = profile_shift
 r2.thickness = r2.module*5   #mm. material added past the *addendum*? six teeth's worth seems decent
 if(noclearance == True):
 	r2.clearance = 0
@@ -234,7 +234,7 @@ def CreateP2Planet():
     p2.properties_from_tool = True
     p2.axle_hole = True
     p2.axle_holesize = planet_bore    #mm
-    p2.shift = -s1_shift
+    p2.shift = -profile_shift
     if(noclearance == True):
         p2.clearance = 0
         p2.head = 0

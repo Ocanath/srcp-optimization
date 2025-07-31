@@ -11,4 +11,4 @@ tooth_counts:
 gear_parameters:
   module: 0.5
   pressure_angle: 20.0
-  s1_shift: 0.0508
+  profile_shift: 0.0508
