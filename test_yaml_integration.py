@@ -3,15 +3,20 @@
 Test script to verify YAML integration without FreeCAD dependencies
 """
 import yaml
+import os
 
 def load_config():
     """
     Test version of the load_config function from GearGeneratorFreecad.py
     """
     try:
-        with open('srcp.yaml', 'r') as f:
+        # Get the directory of this script
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        yaml_path = os.path.join(script_dir, 'srcp.yaml')
+        
+        with open(yaml_path, 'r') as f:
             config = yaml.safe_load(f)
-        print("Loaded configuration from srcp.yaml")
+        print(f"Loaded configuration from {yaml_path}")
         
         # Extract parameters from YAML
         tooth_counts = config['tooth_counts']
@@ -28,7 +33,9 @@ def load_config():
             'profile_shift': gear_params['profile_shift']
         }
     except FileNotFoundError:
-        print("srcp.yaml not found, using default parameters")
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        yaml_path = os.path.join(script_dir, 'srcp.yaml')
+        print(f"srcp.yaml not found at {yaml_path}, using default parameters")
         return {
             'p1_teeth': 21,
             'r1_teeth': 54,

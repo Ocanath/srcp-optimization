@@ -26,9 +26,13 @@ print("Starting gear generator macro")
 # Load configuration from srcp.yaml if it exists, otherwise use defaults
 def load_config():
     try:
-        with open('srcp.yaml', 'r') as f:
+        # Get the directory of this script
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        yaml_path = os.path.join(script_dir, 'srcp.yaml')
+        
+        with open(yaml_path, 'r') as f:
             config = yaml.safe_load(f)
-        print("Loaded configuration from srcp.yaml")
+        print(f"Loaded configuration from {yaml_path}")
         
         # Extract parameters from YAML
         tooth_counts = config['tooth_counts']
@@ -45,7 +49,9 @@ def load_config():
             'profile_shift': gear_params['profile_shift']
         }
     except FileNotFoundError:
-        print("srcp.yaml not found, using default parameters")
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        yaml_path = os.path.join(script_dir, 'srcp.yaml')
+        print(f"srcp.yaml not found at {yaml_path}, using default parameters")
         return {
             'p1_teeth': 21,
             'r1_teeth': 54,
@@ -69,7 +75,7 @@ pressure_angle = gear_config['pressure_angle']
 profile_shift = gear_config['profile_shift']
 
 # Fixed parameters (not from YAML)
-planet_bore = 3.55  #mm
+planet_bore = min(p1_teeth, p2_teeth)//4
 noclearance = False
 
 #mechanical design specific parameters
@@ -210,12 +216,12 @@ if(noclearance == True):
 #recompute before adjusting the thickness again
 App.ActiveDocument.recompute()
 Gui.SendMsgToActiveView("ViewFit")
-dist_to_r2_bearing = FreeCAD.Units.Quantity(r2_bearing_inner_race_ID, "mm") - r2.pitch_diameter
-if(dist_to_r2_bearing > 0.5):
-    r2.thickness = (dist_to_r2_bearing)/2   #mm. material added past the *addendum*? six teeth's worth seems decent
-    print("Adjusted r2 thickness to match bearing")
-else:
-    print("Aborting due to pitch diameter being larger than top bearing ID.")
+# dist_to_r2_bearing = FreeCAD.Units.Quantity(r2_bearing_inner_race_ID, "mm") - r2.pitch_diameter
+# if(dist_to_r2_bearing > 0.5):
+#     r2.thickness = (dist_to_r2_bearing)/2   #mm. material added past the *addendum*? six teeth's worth seems decent
+#     print("Adjusted r2 thickness to match bearing")
+# else:
+#     print("Aborting due to pitch diameter being larger than top bearing ID.")
 #locate ring 2
 r2loc = Hz(0)
 r2loc[2][3] = r1_height+r2_r1_offset

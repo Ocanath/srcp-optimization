@@ -1,6 +1,7 @@
 import numpy as np
 import argparse
 import yaml
+import os
 
 def find_nearest_gear_ratio(target_ratio, max_teeth=500):
     """
@@ -137,10 +138,14 @@ def write_config_yaml(result, pitch_mm=0.5, pressure_angle=20, profile_shift=0.0
         }
     }
     
-    with open('srcp.yaml', 'w') as f:
+    # Write to same directory as this script
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    yaml_path = os.path.join(script_dir, 'srcp.yaml')
+    
+    with open(yaml_path, 'w') as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
     
-    print(f"Configuration written to srcp.yaml")
+    print(f"Configuration written to {yaml_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimize gear ratios for split ring compound planetary gearbox')
