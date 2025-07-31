@@ -75,13 +75,13 @@ pressure_angle = gear_config['pressure_angle']
 profile_shift = gear_config['profile_shift']
 
 # Fixed parameters (not from YAML)
-planet_bore = min(p1_teeth, p2_teeth)//4
+planet_bore = np.round((min(p1_teeth, p2_teeth)*pitch_mm/2)*10)/10
 noclearance = False
 
 #mechanical design specific parameters
-r1_height = 2.5   #mm
-r2_height = 3.5
-p2_height = 3.5
+r1_height = pitch_mm*5   #mm
+r2_height = pitch_mm*5
+p2_height = r2_height
 r2_bearing_inner_race_ID = 30   #inner race ID of the bearing grabbing the top ring. If there's at least half a millimeter of clearance to this ID from the pitch diameter of the ring, we'll adjust the thickness to match this ID
 r2_r1_offset = 0.1
 

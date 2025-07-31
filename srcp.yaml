@@ -9,6 +9,6 @@ tooth_counts:
   p2_teeth: 9
   r2_teeth: 27
 gear_parameters:
-  module: 0.5
+  module: 0.2
   pressure_angle: 20.0
   profile_shift: 0.0508

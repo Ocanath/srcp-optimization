@@ -114,6 +114,20 @@ def find_minimum_ring1_gear_ratio(target_ratio, max_error_percent=5.0, max_teeth
     
     return None  # No solution found within tolerance
 
+def calculate_module_from_od(target_od, r1_teeth, nonstandard_module=False):
+    """
+    Calculate module from target outer diameter
+    OD = pitch_diameter + 2*thickness = r1_teeth*module + 2*(module*5) = module*(r1_teeth + 10)
+    So: module = target_od / (r1_teeth + 10)
+    """
+    calculated_module = target_od / (r1_teeth + 10)
+    
+    if nonstandard_module:
+        return calculated_module
+    else:
+        # Round to nearest 0.1mm
+        return round(calculated_module, 1)
+
 def write_config_yaml(result, pitch_mm=0.5, pressure_angle=20, profile_shift=0.0508):
     """
     Write gearbox configuration to srcp.yaml file
@@ -160,8 +174,29 @@ if __name__ == "__main__":
                        help='Pressure angle in degrees (default: 20)')
     parser.add_argument('--profile-shift', type=float, default=0.0508,
                        help='Profile shift for stage 1 (default: 0.0508)')
+    parser.add_argument('--target-od', type=float,
+                       help='Target outer diameter in mm (overrides --module)')
+    parser.add_argument('--nonstandard-module', action='store_true',
+                       help='Allow non-standard module values (default: round to nearest 0.1mm)')
     
     args = parser.parse_args()
+    
+    # Determine the module to use
+    if args.target_od:
+        # We need to find a gear solution first to get r1_teeth, then calculate module
+        temp_result = None
+        if args.min_error:
+            temp_result = find_nearest_gear_ratio(args.target_ratio)
+        else:
+            temp_result = find_minimum_ring1_gear_ratio(args.target_ratio, max_error_percent=args.tolerance)
+        
+        if temp_result:
+            calculated_module = calculate_module_from_od(args.target_od, temp_result['r1_teeth'], args.nonstandard_module)
+            print(f"Calculated module from target OD {args.target_od}mm: {calculated_module}mm")
+            # Override the module argument
+            args.module = calculated_module
+        else:
+            print("No valid gear solution found, using default module")
     
     if args.min_error:
         # Use minimum error algorithm
