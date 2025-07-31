@@ -159,6 +159,12 @@ if(noclearance == True):
     sun.clearance = 0
     sun.head = 0
 
+# Rotate sun gear to mesh properly with planets
+# The rotation needed is based on the gear tooth alignment
+sun_rotation_angle = 360 / (2 * sun_teeth)  # Half a tooth rotation for proper meshing
+sun_rotation_matrix = Hz(sun_rotation_angle * np.pi / 180)
+sun.Placement = FreeCAD.Placement(NumpyMatrixToFreecadMatrix(sun_rotation_matrix))
+
 #Ring 1
 r1 = freecad.gears.commands.CreateInternalInvoluteGear.create()
 r1.numpoints = num_points
