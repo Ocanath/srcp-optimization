@@ -105,7 +105,7 @@ def DeleteAllGears():
 
 def get_carrier_radius(np, nr, module):
     ns = nr - 2*np
-    return (np*module/2) + (ns*s1_module/2)
+    return (np*module/2) + (ns*module/2)
 
 #compute the carrier circle diameter
 s1_carrier_radius = get_carrier_radius(p1_teeth, r1_teeth, s1_module) 

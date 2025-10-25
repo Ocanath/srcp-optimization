@@ -3,6 +3,27 @@ import argparse
 import yaml
 import os
 
+def get_carrier_radius(np, nr, module):
+    ns = nr - 2*np
+    return (np*module/2) + (ns*module/2)
+
+
+def get_gear_ratio(nr1,nr2,np1,np2,m1,m2):
+    
+    r_r1 = nr1 * m1 / 2
+    r_r2 = nr2 * m2 / 2
+    nts = nr1 - 2*np1
+    r_s = nts * m1 / 2
+    r_p11 = np1 * m1 / 2
+    r_p12 = np1 * m1 / 2
+    r_p2 = np2 * m2 / 2
+
+    I1 = (r_r1*r_p11)/(r_s*r_p12)
+    I2 = (r_r1*r_p2)/(r_r2*r_p12)
+
+    G = (1 - I2)/(1 + I1)
+    return G
+
 def find_nearest_gear_ratio(target_ratio, max_teeth=500):
     """
     Find tooth counts for split ring compound planetary that produces 
