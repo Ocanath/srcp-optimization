@@ -25,62 +25,41 @@ print("Starting gear generator macro")
 
 # Load configuration from srcp.yaml if it exists, otherwise use defaults
 def load_config():
-    try:
-        # Get the directory of this script
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        yaml_path = os.path.join(script_dir, 'srcp.yaml')
-        
-        with open(yaml_path, 'r') as f:
-            config = yaml.safe_load(f)
-        print(f"Loaded configuration from {yaml_path}")
-        
-        # Extract parameters from YAML
-        tooth_counts = config['tooth_counts']
-        gear_params = config['gear_parameters']
-        
-        return {
-            'p1_teeth': tooth_counts['p1_teeth'],
-            'r1_teeth': tooth_counts['r1_teeth'],
-            'r2_teeth': tooth_counts['r2_teeth'],
-            'sun_teeth': tooth_counts['sun_teeth'],
-            'p2_teeth': tooth_counts['p2_teeth'],
-            'pitch_mm': gear_params['module'],
-            'pressure_angle': gear_params['pressure_angle'],
-            'profile_shift': gear_params['profile_shift']
-        }
-    except FileNotFoundError:
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        yaml_path = os.path.join(script_dir, 'srcp.yaml')
-        print(f"srcp.yaml not found at {yaml_path}, using default parameters")
-        return {
-            'p1_teeth': 21,
-            'r1_teeth': 54,
-            'r2_teeth': 53,
-            'sun_teeth': 12,  # r1_teeth - 2*p1_teeth = 54 - 42 = 12
-            'p2_teeth': 20,   # r2_teeth - sun_teeth - p1_teeth = 53 - 12 - 21 = 20
-            'pitch_mm': 0.5,
-            'pressure_angle': 20,
-            'profile_shift': 0.0508
-        }
+    # Get the directory of this script
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    yaml_path = os.path.join(script_dir, 'srcp.yaml')
+    
+    with open(yaml_path, 'r') as f:
+        config = yaml.safe_load(f)
+    print(f"Loaded configuration from {yaml_path}")
+    
+    # Extract parameters from YAML
+    s1_params = config['stack_1_params']
+    s2_params = config['stack_2_params']
+    return s1_params, s2_params
 
 # Load gear parameters
-gear_config = load_config()
-p1_teeth = gear_config['p1_teeth']
-r1_teeth = gear_config['r1_teeth']
-r2_teeth = gear_config['r2_teeth']
-sun_teeth = gear_config['sun_teeth']
-p2_teeth = gear_config['p2_teeth']
-pitch_mm = gear_config['pitch_mm']
-pressure_angle = gear_config['pressure_angle']
-profile_shift = gear_config['profile_shift']
+s1,s2 = load_config()
+p1_teeth = s1['planet_teeth']
+r1_teeth = s1['ring_teeth']
+r2_teeth = s2['ring_teeth']
+# sun_teeth = gear_config['sun_teeth']
+sun_teeth = r1_teeth - 2*p1_teeth	#used for carrier radius. visibility determined by has_sun property
+p2_teeth = s2['planet_teeth']
+s1_module = s1['module']
+s2_module = s2['module']
+s1_pa = s1['pressure_angle']
+s2_pa = s2['pressure_angle']
+s1_x = s1['profile_shift']
+s2_x = s2['profile_shift']
 
 # Fixed parameters (not from YAML)
-planet_bore = np.round((min(p1_teeth, p2_teeth)*pitch_mm/2)*10)/10
+planet_bore = np.round((min(p1_teeth, p2_teeth)*s1_module/2)*10)/10
 noclearance = False
 
 #mechanical design specific parameters
-r1_height = pitch_mm*5   #mm
-r2_height = pitch_mm*5
+r1_height = s1_module*5   #mm
+r2_height = r1_height	#TODO: add as yaml property?
 p2_height = r2_height
 r2_bearing_inner_race_ID = 30   #inner race ID of the bearing grabbing the top ring. If there's at least half a millimeter of clearance to this ID from the pitch diameter of the ring, we'll adjust the thickness to match this ID
 r2_r1_offset = 0.1
@@ -124,15 +103,20 @@ def DeleteAllGears():
         doc.recompute()
         print("Deleted", num_deleted, "Objects")
 
-
+def get_carrier_radius(np, nr, module):
+    ns = nr - 2*np
+    return (np*module/2) + (ns*s1_module/2)
 
 #compute the carrier circle diameter
-carrier_planets_to_sun_distance = (p1_teeth * pitch_mm / 2) + (sun_teeth * pitch_mm / 2)    #carrier radius
-
+s1_carrier_radius = get_carrier_radius(p1_teeth, r1_teeth, s1_module) 
+s2_carrier_radius = get_carrier_radius(p2_teeth, r2_teeth, s2_module) 
+radius_error = np.abs(s1_carrier_radius - s2_carrier_radius) 
+if(radius_error > 1e-9):
+    print(f"Warning - carrier mismatch by {radius_error*1e3}mm. Carrier radii must match.")
 
 #create the placement matrices for the first stage planets
 m_c1_1 = Hz(0)
-m_c1_1[0][3] = carrier_planets_to_sun_distance
+m_c1_1[0][3] = s1_carrier_radius
 #create the next two placement matrixes by rotating the first placement matrix by the carrier spacing (assumed to be even, so 120 and 240)
 ca = 120
 m_c2_1 = Hz(ca*np.pi/180).dot(m_c1_1)    #pre-multiply by 120 degrees rotation in z to put the gear in the right position
@@ -144,54 +128,56 @@ m_c3_1 = m_c3_1.dot(Hz(-ca*np.pi/180*r1_teeth/p1_teeth))
 
 DeleteAllGears()
 
-#Sun gear (central gear)
-sun = freecad.gears.commands.CreateInvoluteGear.create()
-sun.numpoints = num_points
-sun.num_teeth = sun_teeth
-sun.module = pitch_mm
-sun.pressure_angle = pressure_angle
-sun.height = r1_height  # Same height as ring 1
-sun.properties_from_tool = True
-sun.axle_hole = True
-sun.axle_holesize = sun_teeth * pitch_mm * 0.3  # 30% of pitch diameter for axle hole
-sun.shift = profile_shift
-if(noclearance == True):
-    sun.clearance = 0
-    sun.head = 0
 
-# Rotate sun gear to mesh properly with planets
-# The rotation needed is based on the gear tooth alignment
-sun_rotation_angle = 360 / (2 * sun_teeth)  # Half a tooth rotation for proper meshing
-sun_rotation_matrix = Hz(sun_rotation_angle * np.pi / 180)
-sun.Placement = FreeCAD.Placement(NumpyMatrixToFreecadMatrix(sun_rotation_matrix))
+if(s1['has_sun']):
+	#Sun gear (central gear)
+	sun = freecad.gears.commands.CreateInvoluteGear.create()
+	sun.numpoints = num_points
+	sun.num_teeth = sun_teeth
+	sun.module = s1_module
+	sun.pressure_angle = s1_pa
+	sun.height = r1_height  # Same height as ring 1
+	sun.properties_from_tool = True
+	sun.axle_hole = True
+	sun.axle_holesize = sun_teeth * s1_module * 0.3  # 30% of pitch diameter for axle hole
+	sun.shift = s1_x
+	if(noclearance == True):
+		sun.clearance = 0
+		sun.head = 0
+
+	# Rotate sun gear to mesh properly with planets
+	# The rotation needed is based on the gear tooth alignment
+	sun_rotation_angle = 360 / (2 * sun_teeth)  # Half a tooth rotation for proper meshing
+	sun_rotation_matrix = Hz(sun_rotation_angle * np.pi / 180)
+	sun.Placement = FreeCAD.Placement(NumpyMatrixToFreecadMatrix(sun_rotation_matrix))
 
 #Ring 1
 r1 = freecad.gears.commands.CreateInternalInvoluteGear.create()
 r1.numpoints = num_points
 r1.num_teeth = r1_teeth
-r1.module = pitch_mm     #mm 
-r1.pressure_angle = pressure_angle  #degrees
+r1.module = s1_module     #mm 
+r1.pressure_angle = s1_pa  #degrees
 r1.properties_from_tool = True    #"if helix_angle is given and properties_from_tool is enabled, gear parameters are internally recomputed for the rotated gear"
 r1.thickness = r1.module*5   #mm. material added past the *addendum*? six teeth's worth seems decent
 r1.height = r1_height   #mm
-r1.shift = profile_shift
+r1.shift = s1_x
 if(noclearance == True):
-	r1.clearance = 0
-	r1.head = 0
+    r1.clearance = 0
+    r1.head = 0
 
 #helper function to re-call .create with the correct parameters
 def CreateP1Planet():
     #Planet 1, stage 1
     p1 = freecad.gears.commands.CreateInvoluteGear.create()
     p1.numpoints = num_points
-    p1.module = pitch_mm
-    p1.pressure_angle = pressure_angle
+    p1.module = s1_module
+    p1.pressure_angle = s1_pa
     p1.num_teeth = p1_teeth
     p1.height = r1.height
     p1.properties_from_tool = True
     p1.axle_hole = True
     p1.axle_holesize = planet_bore    #mm
-    p1.shift = -profile_shift
+    p1.shift = -s1_x
     if(noclearance == True):
         p1.clearance = 0
         p1.head = 0
@@ -223,16 +209,16 @@ p3_1.Placement = FreeCAD.Placement(m)
 #Ring 2 (stage 2)
 r2 = freecad.gears.commands.CreateInternalInvoluteGear.create()
 r2.num_teeth = r2_teeth
-r2.module = pitch_mm     #mm 
+r2.module = s2_module     #mm 
 r2.numpoints = num_points
-r2.pressure_angle = pressure_angle  #degrees
+r2.pressure_angle = s2_pa  #degrees
 r2.properties_from_tool = True    #"if helix_angle is given and properties_from_tool is enabled, gear parameters are internally recomputed for the rotated gear"
 r2.height = r2_height   #mm
-r2.shift = profile_shift
+r2.shift = s2_x
 r2.thickness = r2.module*5   #mm. material added past the *addendum*? six teeth's worth seems decent
 if(noclearance == True):
-	r2.clearance = 0
-	r2.head = 0
+    r2.clearance = 0
+    r2.head = 0
 
 #recompute before adjusting the thickness again
 App.ActiveDocument.recompute()
@@ -253,15 +239,15 @@ r2.Placement = FreeCAD.Placement(NumpyMatrixToFreecadMatrix(r2loc))
 def CreateP2Planet():
     #Planet 1, stage 1
     p2 = freecad.gears.commands.CreateInvoluteGear.create()
-    p2.module = pitch_mm
-    p2.pressure_angle = pressure_angle
+    p2.module = s2_module
+    p2.pressure_angle = s2_pa
     p2.numpoints = num_points
     p2.num_teeth = p2_teeth
     p2.height = p2_height
     p2.properties_from_tool = True
     p2.axle_hole = True
     p2.axle_holesize = planet_bore    #mm
-    p2.shift = -profile_shift
+    p2.shift = -s2_x
     if(noclearance == True):
         p2.clearance = 0
         p2.head = 0
@@ -270,8 +256,10 @@ def CreateP2Planet():
 #create stack2 base planet (zero rotation/clocked with ring1)
 p1_2 = CreateP2Planet()
 p2_base_loc = Hz(0)
+p2_base_loc[0][3] = s2_carrier_radius
 p2_base_loc[2][3] = p1_1.height
-m_c1_2 = m_c1_1.dot(p2_base_loc) 
+#create the placement matrices for the first stage planets
+m_c1_2 = p2_base_loc
 p1_2.Placement = FreeCAD.Placement(NumpyMatrixToFreecadMatrix(m_c1_2))
 
 #locate second planet by rotating the first planet by 120 about the world Z axis, and about itself by the amount the gear would travel while doing that rotation
