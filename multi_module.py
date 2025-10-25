@@ -11,26 +11,29 @@ cr2 = get_carrier_radius(np2, nr2, m2)
 # Solve for m2 where cr1 - cr2 = 0 (i.e., cr1 = cr2)
 m2_solution = sp.solve(cr1 - cr2, m2)
 
-print("\nSolution for m2:")
-sp.pprint(m2_solution)
-
-
+print("\nGeneral Solution for m2, with equal carrier radius constraint:")
+sp.pprint(sp.Eq(sp.Symbol('m2'), m2_solution[0]))
+print("")
 
 Gs = get_sundrive_gear_ratio(nr1, nr2, np1, np2, m1, m2)
-# sp.pprint(G)
-
 Gc = get_carrierdrive_gear_ratio(nr1, nr2, np1, np2, m2, m2)
+
+
+print(f"If np2 = np1 and nr2 = nr1-1:\n"+'='*60)
 # Define the constraints
 constraints = {
 	np2: np1,
 	nr2: nr1 - 1
 }
 Gc_constrained = Gc.subs(constraints).simplify()
-print(f"If np2 = np1 and nr2 = nr1-1")
-sp.pprint(Gc_constrained)
+Gs_constrained = Gs.subs(constraints).simplify()
+sp.pprint(sp.Eq(sp.Symbol('G_carrier'), Gc_constrained))
+print("")
+sp.pprint(sp.Eq(sp.Symbol('G_sun'), Gs_constrained))
+print("")
 m2_constrained = m2_solution[0].subs(constraints).simplify()
-sp.pprint(m2_constrained)
-
+sp.pprint(sp.Eq(sp.Symbol('m2'), m2_constrained))
+print('='*60)
 
 
 
@@ -47,12 +50,8 @@ Gs_num = Gs.subs(values).evalf()
 print(f"Sun revolutions to one revolution of output ring: {Gs_num}")
 
 Gc_num = Gc.subs(values).evalf()
-print(Gc_num)
 print(f"Carrier revolutions to one revolution of output ring: {Gc_num}")
 # m2_solution is a list, so get the first element
 m2_solution_sub = m2_solution[0].subs(values).evalf()
 
-print("\nm2 numerical value:")
-print(m2_solution_sub)
-
-values[m2] = m2_solution_sub
+print(f"m2 numerical value: {m2_solution_sub}")
