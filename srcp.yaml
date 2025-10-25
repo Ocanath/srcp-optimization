@@ -9,7 +9,7 @@ stack_1_params:
   has_sun: False
 
 stack_2_params:
-  module: 0.5
+  module: 0.515625
   pressure_angle: 20
   profile_shift: 0.0508
   planet_teeth: 21

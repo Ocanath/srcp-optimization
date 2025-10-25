@@ -112,7 +112,7 @@ s1_carrier_radius = get_carrier_radius(p1_teeth, r1_teeth, s1_module)
 s2_carrier_radius = get_carrier_radius(p2_teeth, r2_teeth, s2_module) 
 radius_error = np.abs(s1_carrier_radius - s2_carrier_radius) 
 if(radius_error > 1e-9):
-    print(f"Warning - carrier mismatch by {radius_error*1e3}mm. Carrier radii must match.")
+    print(f"Warning - carrier mismatch by {radius_error}mm. Carrier radii must match.")
 
 #create the placement matrices for the first stage planets
 m_c1_1 = Hz(0)
