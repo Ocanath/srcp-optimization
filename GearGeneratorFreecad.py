@@ -139,8 +139,8 @@ if(s1['has_sun']):
 	sun.height = r1_height  # Same height as ring 1
 	sun.properties_from_tool = True
 	sun.axle_hole = True
-	sun.axle_holesize = sun_teeth * s1_module * 0.3  # 30% of pitch diameter for axle hole
-	sun.shift = s1_x
+	sun.axle_holesize = sun_teeth * s1_module * 0.7  # 30% of pitch diameter for axle hole
+	sun.shift = -s1_x
 	if(noclearance == True):
 		sun.clearance = 0
 		sun.head = 0

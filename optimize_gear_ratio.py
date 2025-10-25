@@ -3,6 +3,12 @@ import argparse
 import yaml
 import os
 
+def check_stage_validity(num_planets, r1_teeth, sun_teeth):
+    angdiv = (r1_teeth + sun_teeth)/num_planets
+    if(np.floor(angdiv) == angdiv):
+        return True
+    else:
+        return False
 
 def get_carrier_radius(np, nr, module):
     ns = nr - 2*np

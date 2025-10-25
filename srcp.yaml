@@ -4,13 +4,13 @@ stack_1_params:
   module: 0.5       # stack 1 module (pitch) in mm
   pressure_angle: 20    # stack 1 angle in degrees
   profile_shift: 0.0508  # Profile shift coefficient, applied to both gears (for 2x shift)
-  planet_teeth: 14
-  ring_teeth: 54
-  has_sun: False
+  planet_teeth: 16
+  ring_teeth: 58
+  has_sun: True
 
 stack_2_params:
-  module: 0.512820512820513
+  module: 0.6
   pressure_angle: 20
   profile_shift: 0.0508
   planet_teeth: 14
-  ring_teeth: 53
+  ring_teeth: 49

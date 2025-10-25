@@ -1,4 +1,4 @@
-from optimize_gear_ratio import get_sundrive_gear_ratio, get_carrierdrive_gear_ratio, get_carrier_radius
+from optimize_gear_ratio import get_sundrive_gear_ratio, get_carrierdrive_gear_ratio, get_carrier_radius, check_stage_validity
 import sympy as sp
 
 nr1, nr2, np1, np2 = sp.symbols('nr1 nr2 np1 np2', positive=True, integer=True)
@@ -23,7 +23,7 @@ print(f"If np2 = np1 and nr2 = nr1-1:\n"+'='*60)
 # Define the constraints
 constraints = {
 	np2: np1,
-	nr2: nr1 - 1
+	# nr1: nr2 + 1
 }
 Gc_constrained = Gc.subs(constraints).simplify()
 Gs_constrained = Gs.subs(constraints).simplify()
@@ -40,12 +40,13 @@ print('='*60)
 
 # Set known values
 values = {
-    nr1: 55,
+    nr1: 58,
     np1: 16,
-    nr2: 54,
-    np2: 16,
+    nr2: 49,
+    np2: 14,
     m1: 0.5
 }
+print(f"Valid: {check_stage_validity(3, values[nr1], values[nr1] - 2*values[np1])}")
 Gs_num = Gs.subs(values).evalf()
 print(f"Sun revolutions to one revolution of output ring: {Gs_num}")
 
@@ -55,3 +56,6 @@ print(f"Carrier revolutions to one revolution of output ring: {Gc_num}")
 m2_solution_sub = m2_solution[0].subs(values).evalf()
 
 print(f"m2 numerical value: {m2_solution_sub}")
+
+
+
