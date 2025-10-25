@@ -15,15 +15,40 @@ print("\nSolution for m2:")
 sp.pprint(m2_solution)
 
 
+
+Gs = get_sundrive_gear_ratio(nr1, nr2, np1, np2, m1, m2)
+# sp.pprint(G)
+
+Gc = get_carrierdrive_gear_ratio(nr1, nr2, np1, np2, m2, m2)
+# Define the constraints
+constraints = {
+	np2: np1,
+	nr2: nr1 - 1
+}
+Gc_constrained = Gc.subs(constraints).simplify()
+print(f"If np2 = np1 and nr2 = nr1-1")
+sp.pprint(Gc_constrained)
+m2_constrained = m2_solution[0].subs(constraints).simplify()
+sp.pprint(m2_constrained)
+
+
+
+
+
 # Set known values
 values = {
-    nr1: 54,
-    np1: 21,
-    nr2: 53,
-    np2: 21,
+    nr1: 55,
+    np1: 16,
+    nr2: 54,
+    np2: 16,
     m1: 0.5
 }
+Gs_num = Gs.subs(values).evalf()
+print(f"Sun revolutions to one revolution of output ring: {Gs_num}")
 
+Gc_num = Gc.subs(values).evalf()
+print(Gc_num)
+print(f"Carrier revolutions to one revolution of output ring: {Gc_num}")
 # m2_solution is a list, so get the first element
 m2_solution_sub = m2_solution[0].subs(values).evalf()
 
@@ -31,13 +56,3 @@ print("\nm2 numerical value:")
 print(m2_solution_sub)
 
 values[m2] = m2_solution_sub
-
-Gs = get_sundrive_gear_ratio(nr1, nr2, np1, np2, m1, m2)
-# sp.pprint(G)
-Gs_num = Gs.subs(values).evalf()
-print(f"Sun revolutions to one revolution of output ring: {Gs_num}")
-
-Gc = get_carrierdrive_gear_ratio(nr1, nr2, np1, np2, m2, m2)
-Gc_num = Gc.subs(values).evalf()
-print(Gc_num)
-print(f"Carrier revolutions to one revolution of output ring: {Gc_num}")
