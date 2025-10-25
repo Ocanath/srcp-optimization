@@ -12,5 +12,5 @@ stack_2_params:
   module: 0.5
   pressure_angle: 20
   profile_shift: 0.0508
-  planet_teeth: 20
+  planet_teeth: 21
   ring_teeth: 53

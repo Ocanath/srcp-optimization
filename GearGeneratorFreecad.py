@@ -343,21 +343,22 @@ print("Exporting as", export_path)
 Part.export(objs, export_path) #r"C:\Users\Ocanath Robotman\Desktop\PLANETSTEP\p3Stack.step"
 
 
-doc = FreeCAD.activeDocument()
-objs = [
-    doc.getObject(sun.Name)
-]
-step_name = "sun.step"
-export_path = os.path.join(script_dir, step_name)
-print("Exporting as", export_path)
-Part.export(objs, export_path)
+if(s1['has_sun']):
+	doc = FreeCAD.activeDocument()
+	objs = [
+		doc.getObject(sun.Name)
+	]
+	step_name = "sun.step"
+	export_path = os.path.join(script_dir, step_name)
+	print("Exporting as", export_path)
+	Part.export(objs, export_path)
 
 
 
 
 doc = FreeCAD.activeDocument()
 objs = [
-    doc.getObject(sun.Name),
+    # doc.getObject(sun.Name),
     doc.getObject(r1.Name),
     doc.getObject(r2.Name),
     doc.getObject(p1_1.Name),
@@ -367,6 +368,9 @@ objs = [
     doc.getObject(p2_2.Name),
     doc.getObject(p3_2.Name)
 ]
+if(s1['has_sun']):
+     objs.append(doc.getObject(sun.Name))
+
 step_name = "all.step"
 export_path = os.path.join(script_dir, step_name)
 print("Exporting as", export_path)
