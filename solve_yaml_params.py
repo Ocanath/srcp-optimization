@@ -17,7 +17,7 @@ import yaml
 import sympy as sp
 import argparse
 import os
-from optimize_gear_ratio import get_carrier_radius, check_stage_validity
+from optimize_gear_ratio import get_carrier_radius, check_stage_validity, get_sundrive_gear_ratio, get_carrierdrive_gear_ratio
 
 
 def detect_missing_params(stack_params):
@@ -215,7 +215,9 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
         print(f"  Stack 1: {'OK: Valid' if valid1 else 'FAIL: Invalid'} (sun_teeth={sun_teeth_1})")
         print()
 
-    
+    Gs = get_sundrive_gear_ratio(stack1['ring_teeth'], stack2['ring_teeth'], stack1['planet_teeth'], stack2['planet_teeth'], stack1['module'], stack2['module'])
+    Gc = get_carrierdrive_gear_ratio(stack1['ring_teeth'], stack2['ring_teeth'], stack1['planet_teeth'], stack2['planet_teeth'], stack1['module'], stack2['module'])
+    print(f"Ratio with sun {Gs}, Ratio from driven carrier {Gc}")
 
     # Write output YAML
     output_config = {
