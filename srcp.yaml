@@ -1,16 +1,13 @@
-# SRCP Gear Configuration
-# Split Ring Compound Planetary Gearbox Parameters
 stack_1_params:
-  module: 0.5       # stack 1 module (pitch) in mm
-  pressure_angle: 20    # stack 1 angle in degrees
-  profile_shift: 0.0508  # Profile shift coefficient, applied to both gears (for 2x shift)
-  planet_teeth: 16
-  ring_teeth: 58
-  has_sun: True
-
-stack_2_params:
-  module: 0.6
+  module: 0.5
   pressure_angle: 20
   profile_shift: 0.0508
-  planet_teeth: 14
-  ring_teeth: 49
+  planet_teeth: 16
+  ring_teeth: 58
+  has_sun: false
+stack_2_params:
+  module: 0.5
+  pressure_angle: 20
+  profile_shift: 0.0508
+  planet_teeth: 15
+  ring_teeth: 57

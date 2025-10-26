@@ -54,7 +54,10 @@ s1_x = s1['profile_shift']
 s2_x = s2['profile_shift']
 
 # Fixed parameters (not from YAML)
-planet_bore = np.round((min(p1_teeth, p2_teeth)*s1_module/2)*10)/10
+# planet_bore = np.round((min(p1_teeth, p2_teeth)*s1_module/2)*10)/10
+def get_bore(teeth,module):
+     return module*teeth*0.5
+planet_bore = np.round(min(get_bore(p1_teeth,s1_module), get_bore(p2_teeth,s2_module))*10)/10
 noclearance = False
 
 #mechanical design specific parameters
@@ -246,7 +249,7 @@ def CreateP2Planet():
     p2.height = p2_height
     p2.properties_from_tool = True
     p2.axle_hole = True
-    p2.axle_holesize = planet_bore    #mm
+    p2.axle_holesize = planet_bore   #mm
     p2.shift = -s2_x
     if(noclearance == True):
         p2.clearance = 0
