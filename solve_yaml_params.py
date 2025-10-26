@@ -197,9 +197,9 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     cr2 = get_carrier_radius(stack2['planet_teeth'], stack2['ring_teeth'], stack2['module'])
 
     print("Verification:")
-    print(f"  Carrier radius 1: {cr1:.6f} mm")
-    print(f"  Carrier radius 2: {cr2:.6f} mm")
-    print(f"  Difference: {abs(cr1 - cr2):.6e} mm")
+    print(f"  Carrier radius 1: {cr1:.9f} mm")
+    print(f"  Carrier radius 2: {cr2:.9f} mm")
+    print(f"  Difference: {abs(cr1 - cr2):.9e} mm")
 
     if abs(cr1 - cr2) > 1e-9:
         print("  WARNING: Carrier radii do not match! IMPOSSIBLE GEARBOX, SOLUTION NOT FOUND" )
@@ -208,16 +208,14 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     print()
 
     # Check stage validity (assumes 3 planets for 120° spacing)
-    sun_teeth_1 = stack1['ring_teeth'] - 2 * stack1['planet_teeth']
-    
-    valid1 = check_stage_validity(3, stack1['ring_teeth'], sun_teeth_1)
-    
+    if(stack1['has_sun']):
+        sun_teeth_1 = stack1['ring_teeth'] - 2 * stack1['planet_teeth']
+        valid1 = check_stage_validity(3, stack1['ring_teeth'], sun_teeth_1)
+        print("Stage Validity (3 planets, 120° spacing):")
+        print(f"  Stack 1: {'OK: Valid' if valid1 else 'FAIL: Invalid'} (sun_teeth={sun_teeth_1})")
+        print()
 
-    print("Stage Validity (3 planets, 120° spacing):")
-    print(f"  Stack 1: {'OK: Valid' if valid1 else 'FAIL: Invalid'} (sun_teeth={sun_teeth_1})")
-    print()
-
-	
+    
 
     # Write output YAML
     output_config = {
