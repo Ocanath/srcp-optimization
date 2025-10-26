@@ -40,112 +40,95 @@ def detect_missing_params(stack_params):
     return missing
 
 
-def solve_missing_module(stack1, stack2, missing_in_stack):
+def solve_for_missing_parameter(stack1, stack2, param_name, missing_in_stack):
     """
-    Solve for missing module using carrier radius constraint.
+    Solve for missing parameter using sympy and carrier radius constraint.
 
-    Uses: (nr1 - np1) * m1 = (nr2 - np2) * m2
+    Uses sympy to symbolically solve: cr1 - cr2 = 0
 
     Args:
         stack1: Stack 1 parameters dict
         stack2: Stack 2 parameters dict
-        missing_in_stack: 1 or 2, indicates which stack has missing module
+        param_name: Name of missing parameter ('module', 'ring_teeth', 'planet_teeth')
+        missing_in_stack: 1 or 2, indicates which stack has missing parameter
 
     Returns:
-        Solved module value
+        Solved parameter value (float for module, int for teeth counts)
     """
+    # Create sympy symbols
+    nr1_sym, nr2_sym = sp.symbols('nr1 nr2', positive=True, integer=True)
+    np1_sym, np2_sym = sp.symbols('np1 np2', positive=True, integer=True)
+    m1_sym, m2_sym = sp.symbols('m1 m2', positive=True, real=True)
+
+    # Get symbolic carrier radius expressions
+    cr1_sym = get_carrier_radius(np1_sym, nr1_sym, m1_sym)
+    cr2_sym = get_carrier_radius(np2_sym, nr2_sym, m2_sym)
+
+    # Create constraint equation: cr1 - cr2 = 0
+    constraint = cr1_sym - cr2_sym
+
+    # Determine which symbol to solve for
     if missing_in_stack == 1:
-        # Solve for m1: m1 = m2 * (nr2 - np2) / (nr1 - np1)
-        m2 = stack2['module']
-        nr1 = stack1['ring_teeth']
-        np1 = stack1['planet_teeth']
-        nr2 = stack2['ring_teeth']
-        np2 = stack2['planet_teeth']
+        if param_name == 'module':
+            solve_for = m1_sym
+        elif param_name == 'ring_teeth':
+            solve_for = nr1_sym
+        else:  # planet_teeth
+            solve_for = np1_sym
+    else:  # missing_in_stack == 2
+        if param_name == 'module':
+            solve_for = m2_sym
+        elif param_name == 'ring_teeth':
+            solve_for = nr2_sym
+        else:  # planet_teeth
+            solve_for = np2_sym
 
-        m1 = m2 * (nr2 - np2) / (nr1 - np1)
-        return m1
-    else:
-        # Solve for m2: m2 = m1 * (nr1 - np1) / (nr2 - np2)
-        m1 = stack1['module']
-        nr1 = stack1['ring_teeth']
-        np1 = stack1['planet_teeth']
-        nr2 = stack2['ring_teeth']
-        np2 = stack2['planet_teeth']
+    # Solve symbolically for the missing parameter
+    solution = sp.solve(constraint, solve_for)
 
-        m2 = m1 * (nr1 - np1) / (nr2 - np2)
-        return m2
+    if not solution:
+        raise ValueError(f"No solution found for {param_name}")
 
+    # Take the first solution (usually only one for linear equations)
+    symbolic_solution = solution[0]
 
-def solve_missing_ring_teeth(stack1, stack2, missing_in_stack):
-    """
-    Solve for missing ring_teeth using carrier radius constraint.
+    # Substitute known values
+    substitutions = {}
 
-    Uses: (nr1 - np1) * m1 = (nr2 - np2) * m2
-
-    Args:
-        stack1: Stack 1 parameters dict
-        stack2: Stack 2 parameters dict
-        missing_in_stack: 1 or 2, indicates which stack has missing ring_teeth
-
-    Returns:
-        Solved ring_teeth value (rounded to nearest integer)
-    """
     if missing_in_stack == 1:
-        # Solve for nr1: nr1 = np1 + m2 * (nr2 - np2) / m1
-        m1 = stack1['module']
-        np1 = stack1['planet_teeth']
-        m2 = stack2['module']
-        nr2 = stack2['ring_teeth']
-        np2 = stack2['planet_teeth']
+        # Missing parameter is in stack 1, substitute all stack 2 values
+        if param_name != 'module':
+            substitutions[m1_sym] = stack1.get('module')
+        if param_name != 'ring_teeth':
+            substitutions[nr1_sym] = stack1.get('ring_teeth')
+        if param_name != 'planet_teeth':
+            substitutions[np1_sym] = stack1.get('planet_teeth')
 
-        nr1 = np1 + m2 * (nr2 - np2) / m1
-        return round(nr1)
+        substitutions[m2_sym] = stack2['module']
+        substitutions[nr2_sym] = stack2['ring_teeth']
+        substitutions[np2_sym] = stack2['planet_teeth']
     else:
-        # Solve for nr2: nr2 = np2 + m1 * (nr1 - np1) / m2
-        m1 = stack1['module']
-        nr1 = stack1['ring_teeth']
-        np1 = stack1['planet_teeth']
-        m2 = stack2['module']
-        np2 = stack2['planet_teeth']
+        # Missing parameter is in stack 2, substitute all stack 1 values
+        substitutions[m1_sym] = stack1['module']
+        substitutions[nr1_sym] = stack1['ring_teeth']
+        substitutions[np1_sym] = stack1['planet_teeth']
 
-        nr2 = np2 + m1 * (nr1 - np1) / m2
-        return round(nr2)
+        if param_name != 'module':
+            substitutions[m2_sym] = stack2.get('module')
+        if param_name != 'ring_teeth':
+            substitutions[nr2_sym] = stack2.get('ring_teeth')
+        if param_name != 'planet_teeth':
+            substitutions[np2_sym] = stack2.get('planet_teeth')
 
+    # Substitute and evaluate numerically
+    numerical_solution = symbolic_solution.subs(substitutions).evalf()
 
-def solve_missing_planet_teeth(stack1, stack2, missing_in_stack):
-    """
-    Solve for missing planet_teeth using carrier radius constraint.
-
-    Uses: (nr1 - np1) * m1 = (nr2 - np2) * m2
-
-    Args:
-        stack1: Stack 1 parameters dict
-        stack2: Stack 2 parameters dict
-        missing_in_stack: 1 or 2, indicates which stack has missing planet_teeth
-
-    Returns:
-        Solved planet_teeth value (rounded to nearest integer)
-    """
-    if missing_in_stack == 1:
-        # Solve for np1: np1 = nr1 - m2 * (nr2 - np2) / m1
-        m1 = stack1['module']
-        nr1 = stack1['ring_teeth']
-        m2 = stack2['module']
-        nr2 = stack2['ring_teeth']
-        np2 = stack2['planet_teeth']
-
-        np1 = nr1 - m2 * (nr2 - np2) / m1
-        return round(np1)
+    # Convert to appropriate type
+    if param_name == 'module':
+        return float(numerical_solution)
     else:
-        # Solve for np2: np2 = nr2 - m1 * (nr1 - np1) / m2
-        m1 = stack1['module']
-        nr1 = stack1['ring_teeth']
-        np1 = stack1['planet_teeth']
-        m2 = stack2['module']
-        nr2 = stack2['ring_teeth']
-
-        np2 = nr2 - m1 * (nr1 - np1) / m2
-        return round(np2)
+        # Round to nearest integer for tooth counts
+        return int(round(numerical_solution))
 
 
 def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
@@ -191,14 +174,10 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
             stack_num = 2
 
         print(f"Solving for stack_{stack_num}_params.{param}...")
+        print(f"Using sympy to solve: cr1 - cr2 = 0")
 
         try:
-            if param == 'module':
-                solved_value = solve_missing_module(stack1, stack2, stack_num)
-            elif param == 'ring_teeth':
-                solved_value = solve_missing_ring_teeth(stack1, stack2, stack_num)
-            elif param == 'planet_teeth':
-                solved_value = solve_missing_planet_teeth(stack1, stack2, stack_num)
+            solved_value = solve_for_missing_parameter(stack1, stack2, param, stack_num)
 
             print(f"Solved: {param} = {solved_value}")
             print()
@@ -225,7 +204,7 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     if abs(cr1 - cr2) > 1e-9:
         print("  WARNING: Carrier radii do not match! IMPOSSIBLE GEARBOX, SOLUTION NOT FOUND" )
     else:
-        print("  ✓ Carrier radii match!")
+        print("  OK: Carrier radii match!")
     print()
 
     # Check stage validity (assumes 3 planets for 120° spacing)
@@ -235,7 +214,7 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     
 
     print("Stage Validity (3 planets, 120° spacing):")
-    print(f"  Stack 1: {'✓ Valid' if valid1 else '✗ Invalid'} (sun_teeth={sun_teeth_1})")
+    print(f"  Stack 1: {'OK: Valid' if valid1 else 'FAIL: Invalid'} (sun_teeth={sun_teeth_1})")
     print()
 
 	
