@@ -1,0 +1,16 @@
+# Test YAML with missing ring_teeth parameter for stack 2
+
+stack_1_params:
+  module: 0.5
+  pressure_angle: 20
+  profile_shift: 0.0508
+  planet_teeth: 10
+  ring_teeth: 52
+  has_sun: True
+
+stack_2_params:
+  module:
+  pressure_angle: 20
+  profile_shift: 0.0508
+  planet_teeth: 10
+  ring_teeth:  51 # Missing - to be calculated
