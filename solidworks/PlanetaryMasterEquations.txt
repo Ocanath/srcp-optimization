@@ -1,0 +1,7 @@
+﻿"S1_Module"= 0.5		'tooth per mm
+"R1_NumTeeth"= 52"P1_teeth"= 10"R2_teeth"= 51
+"S1_PressureAngle"= 20'deg. leave unitless
+"sun_teeth"= "R1_NumTeeth" - 2 * "P1_teeth"
+"S1_carrier_radius"= "P1_teeth" * "S1_Module" / 2  + "sun_teeth" * "S1_Module" / 2
+"S2_Module"= 0.5121951219512195			'stage two gear modules CAN be different from stage 1; this makes things a lot more complicated though so try and avoid it if you can
+"S2_PressureAngle"= "S1_PressureAngle"'stage two pressure angle can be different, but for simplicity keep it the same"P2_teeth" = 10"Ring_profile_shift" = 0.05"Planet_profile_shift" = -0.05"Ring_broachcutter_offset" = 0.0"Planet_broachcutter_offset" = -0.0

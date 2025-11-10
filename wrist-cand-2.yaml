@@ -6,7 +6,7 @@ stack_1_params:
   profile_shift: 0.0508
   planet_teeth: 10
   ring_teeth: 52
-  has_sun: True
+  has_sun: False
 
 stack_2_params:
   module:
