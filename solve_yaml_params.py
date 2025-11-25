@@ -126,6 +126,9 @@ def solve_for_missing_parameter(stack1, stack2, param_name, missing_in_stack):
     # Substitute to get rational result first
     rational_solution = symbolic_solution.subs(substitutions)
 
+    # Simplify to ensure we get a rational form
+    rational_solution = sp.nsimplify(rational_solution)
+
     # Evaluate numerically for practical use
     numerical_solution = rational_solution.evalf()
 
