@@ -92,6 +92,9 @@ def solve_for_missing_parameter(stack1, stack2, param_name, missing_in_stack):
     # Take the first solution (usually only one for linear equations)
     symbolic_solution = solution[0]
 
+    # Simplify the symbolic expression before substitution
+    symbolic_simplified = sp.simplify(symbolic_solution)
+
     # Substitute known values
     substitutions = {}
 
@@ -126,12 +129,12 @@ def solve_for_missing_parameter(stack1, stack2, param_name, missing_in_stack):
     # Evaluate numerically for practical use
     numerical_solution = rational_solution.evalf()
 
-    # Convert to appropriate type and return tuple with symbolic form
+    # Convert to appropriate type and return tuple with symbolic form and expression
     if param_name == 'module':
-        return float(numerical_solution), str(rational_solution)
+        return float(numerical_solution), str(rational_solution), str(symbolic_simplified)
     else:
         # Round to nearest integer for tooth counts
-        return int(round(numerical_solution)), None
+        return int(round(numerical_solution)), None, None
 
 
 def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
@@ -180,9 +183,10 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
         print(f"Using sympy to solve: cr1 - cr2 = 0")
 
         try:
-            solved_value, frac_str = solve_for_missing_parameter(stack1, stack2, param, stack_num)
+            solved_value, frac_str, expr_str = solve_for_missing_parameter(stack1, stack2, param, stack_num)
 
             if param == 'module':
+                print(f"Symbolic expression: {param} = {expr_str}")
                 print(f"Solved: {param} = {solved_value} = {frac_str}")
             else:
                 print(f"Solved: {param} = {solved_value}")
