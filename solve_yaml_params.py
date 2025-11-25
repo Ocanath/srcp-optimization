@@ -120,15 +120,18 @@ def solve_for_missing_parameter(stack1, stack2, param_name, missing_in_stack):
         if param_name != 'planet_teeth':
             substitutions[np2_sym] = stack2.get('planet_teeth')
 
-    # Substitute and evaluate numerically
-    numerical_solution = symbolic_solution.subs(substitutions).evalf()
+    # Substitute to get rational result first
+    rational_solution = symbolic_solution.subs(substitutions)
 
-    # Convert to appropriate type
+    # Evaluate numerically for practical use
+    numerical_solution = rational_solution.evalf()
+
+    # Convert to appropriate type and return tuple with symbolic form
     if param_name == 'module':
-        return float(numerical_solution)
+        return float(numerical_solution), str(rational_solution)
     else:
         # Round to nearest integer for tooth counts
-        return int(round(numerical_solution))
+        return int(round(numerical_solution)), None
 
 
 def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
@@ -177,16 +180,23 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
         print(f"Using sympy to solve: cr1 - cr2 = 0")
 
         try:
-            solved_value = solve_for_missing_parameter(stack1, stack2, param, stack_num)
+            solved_value, frac_str = solve_for_missing_parameter(stack1, stack2, param, stack_num)
 
-            print(f"Solved: {param} = {solved_value}")
+            if param == 'module':
+                print(f"Solved: {param} = {solved_value} = {frac_str}")
+            else:
+                print(f"Solved: {param} = {solved_value}")
             print()
 
             # Update the configuration
             if stack_num == 1:
                 stack1[param] = solved_value
+                if param == 'module':
+                    stack1['module_fraction'] = frac_str
             else:
                 stack2[param] = solved_value
+                if param == 'module':
+                    stack2['module_fraction'] = frac_str
 
         except Exception as e:
             print(f"ERROR: Could not solve for {param}: {e}")
@@ -218,6 +228,12 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     Gs = get_sundrive_gear_ratio(stack1['ring_teeth'], stack2['ring_teeth'], stack1['planet_teeth'], stack2['planet_teeth'], stack1['module'], stack2['module'])
     Gc = get_carrierdrive_gear_ratio(stack1['ring_teeth'], stack2['ring_teeth'], stack1['planet_teeth'], stack2['planet_teeth'], stack1['module'], stack2['module'])
     print(f"Ratio with sun {Gs}, Ratio from driven carrier {Gc}")
+
+    # Add module_fraction fields for human readability (if not already set by solver)
+    if 'module_fraction' not in stack1:
+        stack1['module_fraction'] = str(sp.Rational(stack1['module']).limit_denominator())
+    if 'module_fraction' not in stack2:
+        stack2['module_fraction'] = str(sp.Rational(stack2['module']).limit_denominator())
 
     # Write output YAML
     output_config = {

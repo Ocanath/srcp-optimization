@@ -54,8 +54,9 @@ Gc_num = Gc.subs(values).evalf()
 print(f"Carrier revolutions to one revolution of output ring: {Gc_num}")
 # m2_solution is a list, so get the first element
 m2_solution_sub = m2_solution[0].subs(values).evalf()
+m2_fraction = sp.nsimplify(m2_solution_sub)
 
-print(f"m2 numerical value: {m2_solution_sub}")
+print(f"m2 numerical value: {m2_solution_sub} = {m2_fraction}")
 
 
 
