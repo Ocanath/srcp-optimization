@@ -162,13 +162,6 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     missing_stack1 = detect_missing_params(stack1)
     missing_stack2 = detect_missing_params(stack2)
 
-    r_f = (stack1['module']*stack1['ring_teeth']/2)+stack1['module'] * (1.25 + stack1['profile_shift'])
-    od = r_f*2.1
-    print(f"Ring Gear 1 OD: {od}")
-    r_f = (stack2['module']*stack2['ring_teeth']/2)+stack2['module'] * (1.25 + stack2['profile_shift'])
-    od = r_f*2.1
-    print(f"Ring Gear 2 OD: {od}")
-
     print(f"Reading: {input_yaml_path}")
     print(f"Stack 1 missing: {missing_stack1 if missing_stack1 else 'None'}")
     print(f"Stack 2 missing: {missing_stack2 if missing_stack2 else 'None'}")
@@ -251,6 +244,16 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
         stack1['module_fraction'] = str(sp.Rational(stack1['module']).limit_denominator())
     if 'module_fraction' not in stack2:
         stack2['module_fraction'] = str(sp.Rational(stack2['module']).limit_denominator())
+
+
+
+    r_f = (stack1['module']*stack1['ring_teeth']/2)+stack1['module'] * (1.25 + stack1['profile_shift'])
+    od = r_f*2.1
+    stack1['ring OD'] = od
+    r_f = (stack2['module']*stack2['ring_teeth']/2)+stack2['module'] * (1.25 + stack2['profile_shift'])
+    od = r_f*2.1
+    stack2['ring OD'] = od
+
 
     # Write output YAML
     output_config = {
