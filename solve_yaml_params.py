@@ -19,6 +19,9 @@ import argparse
 import os
 from optimize_gear_ratio import get_carrier_radius, check_stage_validity, get_sundrive_gear_ratio, get_carrierdrive_gear_ratio
 
+def calc_optimal_S2_rotation(nR2, nP2, num_planets=3, is_even=True):
+    carrier_rotation = 2*sp.pi/num_planets
+    # rotation_p1 = 
 
 def detect_missing_params(stack_params):
     """
@@ -158,6 +161,13 @@ def solve_and_complete_config(input_yaml_path, output_yaml_path='srcp.yaml'):
     # Detect missing parameters
     missing_stack1 = detect_missing_params(stack1)
     missing_stack2 = detect_missing_params(stack2)
+
+    r_f = (stack1['module']*stack1['ring_teeth']/2)+stack1['module'] * (1.25 + stack1['profile_shift'])
+    od = r_f*2.1
+    print(f"Ring Gear 1 OD: {od}")
+    r_f = (stack2['module']*stack2['ring_teeth']/2)+stack2['module'] * (1.25 + stack2['profile_shift'])
+    od = r_f*2.1
+    print(f"Ring Gear 2 OD: {od}")
 
     print(f"Reading: {input_yaml_path}")
     print(f"Stack 1 missing: {missing_stack1 if missing_stack1 else 'None'}")
